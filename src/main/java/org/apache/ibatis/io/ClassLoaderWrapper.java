@@ -15,6 +15,7 @@
  */
 package org.apache.ibatis.io;
 
+import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.net.URL;
 
@@ -68,6 +69,7 @@ public class ClassLoaderWrapper {
   }
 
   /*
+   * 通过类加载器获取资源
    * Get a resource from the classpath, starting with a specific class loader
    *
    * @param resource    - the resource to find
@@ -75,6 +77,7 @@ public class ClassLoaderWrapper {
    * @return the stream or null
    */
   public InputStream getResourceAsStream(String resource, ClassLoader classLoader) {
+    // getClassLoaders() 获取类加载器，根据类加载器获取资源
     return getResourceAsStream(resource, getClassLoaders(classLoader));
   }
 
@@ -112,9 +115,14 @@ public class ClassLoaderWrapper {
     for (ClassLoader cl : classLoader) {
       if (null != cl) {
 
+        // 读取 mybatis-config.xml
         // try to find the resource as passed
         InputStream returnValue = cl.getResourceAsStream(resource);
 
+        // 查看 mybatis-config.xml 的内容
+        //convertStreamToStr(returnValue);
+
+        // 读取不到资源，加上 / 再试一次
         // now, some class loaders want this leading "/", so we'll add it and try again if we didn't find the resource
         if (null == returnValue) {
           returnValue = cl.getResourceAsStream("/" + resource);
@@ -201,6 +209,7 @@ public class ClassLoaderWrapper {
 
   }
 
+  /* 获取类加载器列表 */
   ClassLoader[] getClassLoaders(ClassLoader classLoader) {
     return new ClassLoader[]{
         classLoader,
@@ -208,6 +217,27 @@ public class ClassLoaderWrapper {
         Thread.currentThread().getContextClassLoader(),
         getClass().getClassLoader(),
         systemClassLoader};
+  }
+
+  private void convertStreamToStr(InputStream inputStream) {
+    try {
+      //初始值，起标志位作用
+      int len;
+      //缓冲区
+      byte[] buf = new byte[128];
+      //捕获内存缓冲区的数据转换为字节数组
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      //循环读取内容,将输入流的内容放进缓冲区中
+      while ((len = inputStream.read(buf)) != -1) {
+        //将缓冲区内容写进输出流，0是从起始偏移量，len是指定的字符个数
+        baos.write(buf, 0, len);
+      }
+      //最终结果，将字节数组转换成字符
+      String result = new String(baos.toByteArray());
+      System.out.println(result);
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+    }
   }
 
 }

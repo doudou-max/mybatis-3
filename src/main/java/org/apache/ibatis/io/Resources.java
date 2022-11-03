@@ -90,6 +90,7 @@ public class Resources {
   }
 
   /*
+   * 代码中从类路径中加载核心配置文件 resource = "mybatis-config.xml"
    * Returns a resource on the classpath as a Stream object
    *
    * @param resource The resource to find
@@ -101,6 +102,7 @@ public class Resources {
   }
 
   /*
+   * 以流的形式返回类路径上的资源
    * Returns a resource on the classpath as a Stream object
    *
    * @param loader   The classloader used to fetch the resource
@@ -109,6 +111,7 @@ public class Resources {
    * @throws java.io.IOException If the resource cannot be found or read
    */
   public static InputStream getResourceAsStream(ClassLoader loader, String resource) throws IOException {
+    // 读取流
     InputStream in = classLoaderWrapper.getResourceAsStream(resource, loader);
     if (in == null) {
       throw new IOException("Could not find resource " + resource);
