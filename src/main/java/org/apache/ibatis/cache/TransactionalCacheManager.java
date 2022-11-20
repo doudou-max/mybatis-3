@@ -21,6 +21,13 @@ import java.util.Map;
 import org.apache.ibatis.cache.decorators.TransactionalCache;
 
 /**
+ * mybatis 的二级缓存
+ *   如果开启二级缓存，二级缓存优先级高于一级缓存
+ *   二级缓存作用于同一个 Mapper 下
+ *   如果是同一个SqlSession，二级缓存不会命中
+ *   命中需要关闭前一个SqlSession，新开一个查询
+ *   二级缓存获取的对象和数据库查出来对象地址不相等，二级缓存加了一些处理
+ *
  * @author Clinton Begin
  */
 public class TransactionalCacheManager {

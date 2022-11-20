@@ -40,6 +40,7 @@ public class MapperRegistry {
     this.config = config;
   }
 
+  /** 获取 Mapper 代理对象 */
   @SuppressWarnings("unchecked")
   public <T> T getMapper(Class<T> type, SqlSession sqlSession) {
     final MapperProxyFactory<T> mapperProxyFactory = (MapperProxyFactory<T>) knownMappers.get(type);

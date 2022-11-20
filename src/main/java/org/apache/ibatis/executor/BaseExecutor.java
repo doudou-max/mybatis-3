@@ -55,6 +55,7 @@ public abstract class BaseExecutor implements Executor {
   protected Executor wrapper;
 
   protected ConcurrentLinkedQueue<DeferredLoad> deferredLoads;
+  /** 一级缓存 (默认开启) */
   protected PerpetualCache localCache;
   protected PerpetualCache localOutputParameterCache;
   protected Configuration configuration;
@@ -136,6 +137,7 @@ public abstract class BaseExecutor implements Executor {
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
  }
 
+ /** sql query */
   @SuppressWarnings("unchecked")
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
@@ -149,10 +151,13 @@ public abstract class BaseExecutor implements Executor {
     List<E> list;
     try {
       queryStack++;
+      // 从一级缓存获取数据
       list = resultHandler == null ? (List<E>) localCache.getObject(key) : null;
       if (list != null) {
+        // 一级缓存不为空，处理数据
         handleLocallyCachedOutputParameters(ms, key, parameter, boundSql);
       } else {
+        // 从数据库查询
         list = queryFromDatabase(ms, parameter, rowBounds, resultHandler, key, boundSql);
       }
     } finally {
@@ -191,16 +196,17 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /** mybatis 查询创建缓存key */
   @Override
   public CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql) {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
     CacheKey cacheKey = new CacheKey();
-    cacheKey.update(ms.getId());
-    cacheKey.update(rowBounds.getOffset());
-    cacheKey.update(rowBounds.getLimit());
-    cacheKey.update(boundSql.getSql());
+    cacheKey.update(ms.getId());                  // 接口全限名称
+    cacheKey.update(rowBounds.getOffset());       // 偏移量
+    cacheKey.update(rowBounds.getLimit());        // 数据量大小
+    cacheKey.update(boundSql.getSql());           // 查询的sql(替换占位符了)
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     TypeHandlerRegistry typeHandlerRegistry = ms.getConfiguration().getTypeHandlerRegistry();
     // mimic DefaultParameterHandler logic
@@ -218,12 +224,12 @@ public abstract class BaseExecutor implements Executor {
           MetaObject metaObject = configuration.newMetaObject(parameterObject);
           value = metaObject.getValue(propertyName);
         }
-        cacheKey.update(value);
+        cacheKey.update(value);                     // 查询参数列表
       }
     }
     if (configuration.getEnvironment() != null) {
       // issue #176
-      cacheKey.update(configuration.getEnvironment().getId());
+      cacheKey.update(configuration.getEnvironment().getId());    // 配置环境id
     }
     return cacheKey;
   }
@@ -317,14 +323,18 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
+  /** sql 查库 */
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
-    localCache.putObject(key, EXECUTION_PLACEHOLDER);
+    localCache.putObject(key, EXECUTION_PLACEHOLDER);   // 这里缓存为了什么 ???
     try {
+      // do query
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
+      // 删除缓存
       localCache.removeObject(key);
     }
+    // 添加缓存
     localCache.putObject(key, list);
     if (ms.getStatementType() == StatementType.CALLABLE) {
       localOutputParameterCache.putObject(key, parameter);

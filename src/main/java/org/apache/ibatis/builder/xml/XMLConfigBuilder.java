@@ -78,7 +78,9 @@ public class XMLConfigBuilder extends BaseBuilder {
     this(inputStream, environment, null);
   }
 
+  /**  解析 xml 文件 */
   public XMLConfigBuilder(InputStream inputStream, String environment, Properties props) {
+    // new XPathParser 解析 xml 文件
     this(new XPathParser(inputStream, true, props, new XMLMapperEntityResolver()), environment, props);
   }
 

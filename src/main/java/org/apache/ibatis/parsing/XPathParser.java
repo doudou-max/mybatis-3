@@ -120,8 +120,11 @@ public class XPathParser {
     this.document = createDocument(new InputSource(reader));
   }
 
+  /** 解析 xml 配置文件 */
   public XPathParser(InputStream inputStream, boolean validation, Properties variables, EntityResolver entityResolver) {
     commonConstructor(validation, variables, entityResolver);
+    // new InputSource() 将 inputStream 转成 InputSource
+    // createDocument：解析 xml 转成 document
     this.document = createDocument(new InputSource(inputStream));
   }
 
@@ -225,18 +228,20 @@ public class XPathParser {
     }
   }
 
+  /** 解析 inputSource，转成 Document  */
   private Document createDocument(InputSource inputSource) {
     // important: this must only be called AFTER common constructor
     try {
+      // 创建工程
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setValidating(validation);
-
       factory.setNamespaceAware(false);
       factory.setIgnoringComments(true);
       factory.setIgnoringElementContentWhitespace(false);
       factory.setCoalescing(false);
       factory.setExpandEntityReferences(true);
 
+      // 工厂构建 Document
       DocumentBuilder builder = factory.newDocumentBuilder();
       builder.setEntityResolver(entityResolver);
       builder.setErrorHandler(new ErrorHandler() {
@@ -254,6 +259,7 @@ public class XPathParser {
         public void warning(SAXParseException exception) throws SAXException {
         }
       });
+      // Document 执行解析
       return builder.parse(inputSource);
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);

@@ -44,6 +44,7 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     this.methodCache = methodCache;
   }
 
+  /** mybatis 方法执行代理调用 */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
@@ -55,7 +56,9 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     } catch (Throwable t) {
       throw ExceptionUtil.unwrapThrowable(t);
     }
+    // 缓存 Mapper 方法
     final MapperMethod mapperMethod = cachedMapperMethod(method);
+    // 执行方法
     return mapperMethod.execute(sqlSession, args);
   }
 

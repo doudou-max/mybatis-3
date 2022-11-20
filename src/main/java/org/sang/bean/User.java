@@ -15,11 +15,13 @@
  */
 package org.sang.bean;
 
+import java.io.Serializable;
+
 /**
  * @author: doudou
  * @since: 2022-11-03
  */
-public class User {
+public class User implements Serializable {
 
     private Long id;
 

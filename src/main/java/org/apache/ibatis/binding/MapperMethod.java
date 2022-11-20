@@ -50,6 +50,7 @@ public class MapperMethod {
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
+  /** 方法执行 */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     switch (command.getType()) {
@@ -79,7 +80,9 @@ public class MapperMethod {
         } else if (method.returnsCursor()) {
           result = executeForCursor(sqlSession, args);
         } else {
+          // 转换成sql参数
           Object param = method.convertArgsToSqlCommandParam(args);
+          // 查询sql
           result = sqlSession.selectOne(command.getName(), param);
         }
         break;
@@ -120,6 +123,7 @@ public class MapperMethod {
           + " needs either a @ResultMap annotation, a @ResultType annotation,"
           + " or a resultType attribute in XML so a ResultHandler can be used as a parameter.");
     }
+    // 方法参数转成sql参数
     Object param = method.convertArgsToSqlCommandParam(args);
     if (method.hasRowBounds()) {
       RowBounds rowBounds = method.extractRowBounds(args);

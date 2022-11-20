@@ -39,6 +39,7 @@ import org.apache.ibatis.transaction.Transaction;
 public class CachingExecutor implements Executor {
 
   private final Executor delegate;
+  /** 二级缓存 */
   private final TransactionalCacheManager tcm = new TransactionalCacheManager();
 
   public CachingExecutor(Executor delegate) {
@@ -76,10 +77,14 @@ public class CachingExecutor implements Executor {
     return delegate.update(ms, parameterObject);
   }
 
+  /** 执行sql查询 */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+    // 获取sql语句 (好像是替换占位符)
     BoundSql boundSql = ms.getBoundSql(parameterObject);
+    // 创建缓存key
     CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
+    // 查询
     return query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
 
@@ -89,23 +94,30 @@ public class CachingExecutor implements Executor {
     return delegate.queryCursor(ms, parameter, rowBounds);
   }
 
+  /** sql query */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql)
       throws SQLException {
+    // 获取二级缓存 (SynchronizedCache)
     Cache cache = ms.getCache();
+    // 二级缓存不为空
     if (cache != null) {
+      // 刷新缓存如果有必要
       flushCacheIfRequired(ms);
       if (ms.isUseCache() && resultHandler == null) {
         ensureNoOutParams(ms, boundSql);
+        // 从缓存中获取数据
         @SuppressWarnings("unchecked")
         List<E> list = (List<E>) tcm.getObject(cache, key);
         if (list == null) {
           list = delegate.<E> query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
+          // 将数据放到二级缓存中
           tcm.putObject(cache, key, list); // issue #578 and #116
         }
         return list;
       }
     }
+    // 二级缓存为空
     return delegate.<E> query(ms, parameterObject, rowBounds, resultHandler, key, boundSql);
   }
 
