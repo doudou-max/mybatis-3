@@ -18,12 +18,34 @@ package org.apache.ibatis.plugin;
 import java.util.Properties;
 
 /**
+ * mybatis 的拦截器
+ * 使用场景：
+ *    分页功能
+ *    公共字段赋值
+ *    性能监控日志
+ *
+ * 可以拦截的方法：
+ *    执行器 Executor(query,update,commit,rollback...)
+ *    SQL语句构造器 StatementHandler
+ *    参数处理器ParameterHandler 和 结果处理器ResultSetHandler
+ *
+ * 使用插件
+ *    在 mybatis-config.xml 文件的 <configuration/> 标签中指定 <plugin/>
+ *
+ * mybatis-plus 分页插件
+ *    PaginationInterceptor
+ *
+ * 参考博客：
+ *    https://blog.csdn.net/weixin_52851967/article/details/125190987
+ *
  * @author Clinton Begin
  */
 public interface Interceptor {
 
+  /** 拦截方法 */
   Object intercept(Invocation invocation) throws Throwable;
 
+  /** 插件注入 */
   Object plugin(Object target);
 
   void setProperties(Properties properties);

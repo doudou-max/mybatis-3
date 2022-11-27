@@ -33,6 +33,10 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * 缓存Executor，处理二级缓存
+ *    如果二级缓存开启，查询先通过该Executor查询
+ *    如果查不到，再调用其他Executor查询
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  */

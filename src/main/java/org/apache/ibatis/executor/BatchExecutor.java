@@ -36,7 +36,11 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
- * @author Jeff Butler 
+ * 当执行查询时，BatchExecutor 与 SimpleExecutor 的处理逻辑是一样的
+ * 不同的是执行更新方法(mybatis 认为 delete 和 insert 都是update)
+ * 执行更新方法时，BatchExecutor 不是直接执行SQL语句，而是将其放到批次里面，等到提交的时候一起执行
+ *
+ * @author Jeff Butler
  */
 public class BatchExecutor extends BaseExecutor {
 
@@ -54,18 +58,25 @@ public class BatchExecutor extends BaseExecutor {
   @Override
   public int doUpdate(MappedStatement ms, Object parameterObject) throws SQLException {
     final Configuration configuration = ms.getConfiguration();
+    // 创建 Statement 或者 PreparedStatement 对象
     final StatementHandler handler = configuration.newStatementHandler(this, ms, parameterObject, RowBounds.DEFAULT, null, null);
     final BoundSql boundSql = handler.getBoundSql();
+    // 获得原始SQL语句
     final String sql = boundSql.getSql();
     final Statement stmt;
+    // 判断当前执行的SQL是否在上一次已经执行过
+    // 下面的条件表示，SQL语句相同，调用的mapper接口方法也相同
     if (sql.equals(currentSql) && ms.equals(currentStatement)) {
+      // 如果在上一次已经执行过，那么直接复用上一次使用的 Statement 或者 PreparedStatement 对象
       int last = statementList.size() - 1;
       stmt = statementList.get(last);
       applyTransactionTimeout(stmt);
      handler.parameterize(stmt);//fix Issues 322
+      // batchResult用于记录批次执行结果
       BatchResult batchResult = batchResultList.get(last);
       batchResult.addParameterObject(parameterObject);
     } else {
+      // 下面的内容是新建 Statement 或者 PreparedStatement 对象，用于执行新的SQL语句
       Connection connection = getConnection(ms.getStatementLog());
       stmt = handler.prepare(connection, transaction.getTimeout());
       handler.parameterize(stmt);    //fix Issues 322
@@ -75,7 +86,9 @@ public class BatchExecutor extends BaseExecutor {
       batchResultList.add(new BatchResult(ms, sql, parameterObject));
     }
   // handler.parameterize(stmt);
+    // 将SQL加入批次
     handler.batch(stmt);
+    // 返回一个常量值，表示当前是批次执行
     return BATCH_UPDATE_RETURN_VALUE;
   }
 
@@ -107,6 +120,10 @@ public class BatchExecutor extends BaseExecutor {
     return handler.<E>queryCursor(stmt);
   }
 
+  /**
+   * 当连续执行的SQL语句相同时，BatchExecutor 才会将其加入到同一个批次中，否则新建 Statement 或者 PreparedStatement 对象，并创建新批次
+   * 当提交事务时，会执行 BatchExecutor 的 doFlushStatements 方法，
+   */
   @Override
   public List<BatchResult> doFlushStatements(boolean isRollback) throws SQLException {
     try {
@@ -114,11 +131,13 @@ public class BatchExecutor extends BaseExecutor {
       if (isRollback) {
         return Collections.emptyList();
       }
+      // 遍历每个批次
       for (int i = 0, n = statementList.size(); i < n; i++) {
         Statement stmt = statementList.get(i);
         applyTransactionTimeout(stmt);
         BatchResult batchResult = batchResultList.get(i);
         try {
+          // 执行每个批次，将批次执行结果存入BatchResult对象
           batchResult.setUpdateCounts(stmt.executeBatch());
           MappedStatement ms = batchResult.getMappedStatement();
           List<Object> parameterObjects = batchResult.getParameterObjects();
@@ -151,6 +170,7 @@ public class BatchExecutor extends BaseExecutor {
       }
       return results;
     } finally {
+      // 关闭每个 statement 对象
       for (Statement stmt : statementList) {
         closeStatement(stmt);
       }

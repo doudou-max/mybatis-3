@@ -22,6 +22,7 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
+ * mybatis 拦截器注解
  * @author Clinton Begin
  */
 @Documented

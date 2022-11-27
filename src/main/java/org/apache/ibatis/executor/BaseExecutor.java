@@ -45,6 +45,13 @@ import org.apache.ibatis.transaction.Transaction;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
 /**
+ * BaseExecutor是除CachingExecutor之外，其他Executor实现类的基类
+ * 该类主要处理一级缓存。该类中属性localCache表示一级缓存
+ *
+ * 当调用该类的查询方法时，先查看一级缓存中是否已经有数据，如果有则直接从缓存获取，如果没有调用子类的查询方法从数据库中获取
+ * 当调用该类的 update 方法(mybatis 将 delete 和 insert 认为是 update，统一调用该类update方法)时，BaseExecutor 将一级缓存清空，然后调用子类对应的增删改方法
+ * 调用执行 rollback/commit 方法时，该类清空一级缓存
+ *
  * @author Clinton Begin
  */
 public abstract class BaseExecutor implements Executor {

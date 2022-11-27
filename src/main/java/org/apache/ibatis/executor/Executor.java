@@ -28,6 +28,12 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * SqlSession执行增删改查都是委托给Executor完成
+ *    1、CachingExecutor用于处理二级缓存，如果缓存中不存在要查询的数据，那么将查询请求委托给其他的Executor，
+ *       如果是执行SQL的增删改，那么CachingExecutor将清空二级缓存。
+ *
+ * 参考文章：https://blog.csdn.net/weixin_38308374/article/details/109062502
+ *
  * @author Clinton Begin
  */
 public interface Executor {

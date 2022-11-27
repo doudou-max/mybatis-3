@@ -24,6 +24,8 @@ import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.BatchResult;
 
 /**
+ * MyBatis 实现分页是通过 RowBounds 分页，不会将分页参数传给数据库，是内存分页
+ *
  * The primary Java interface for working with MyBatis.
  * Through this interface you can execute commands, get mappers and manage transactions.
  *

@@ -93,15 +93,19 @@ public class XMLConfigBuilder extends BaseBuilder {
     this.parser = parser;
   }
 
+  /** 解析 mybatis-config.xml 文件 */
   public Configuration parse() {
     if (parsed) {
       throw new BuilderException("Each XMLConfigBuilder can only be used once.");
     }
     parsed = true;
+    // evalNode 解析 <configuration> 标签
+    // parseConfiguration() 解析 里面配置详情
     parseConfiguration(parser.evalNode("/configuration"));
     return configuration;
   }
 
+  /** 解析 mybatis-config.xml 配置详情 */
   private void parseConfiguration(XNode root) {
     try {
       //issue #117 read properties first
@@ -115,6 +119,7 @@ public class XMLConfigBuilder extends BaseBuilder {
       reflectorFactoryElement(root.evalNode("reflectorFactory"));
       settingsElement(settings);
       // read it after objectFactory and objectWrapperFactory issue #631
+      // environments 解析数据库连接相关信息
       environmentsElement(root.evalNode("environments"));
       databaseIdProviderElement(root.evalNode("databaseIdProvider"));
       typeHandlerElement(root.evalNode("typeHandlers"));

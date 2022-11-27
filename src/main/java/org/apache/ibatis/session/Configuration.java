@@ -564,15 +564,16 @@ public class Configuration {
     return newExecutor(transaction, defaultExecutorType);
   }
 
+  /** 根据不同类型Executor获取Executor */
   public Executor newExecutor(Transaction transaction, ExecutorType executorType) {
     executorType = executorType == null ? defaultExecutorType : executorType;
     executorType = executorType == null ? ExecutorType.SIMPLE : executorType;
     Executor executor;
-    if (ExecutorType.BATCH == executorType) {
+    if (ExecutorType.BATCH == executorType) {         // 批次Executor
       executor = new BatchExecutor(this, transaction);
-    } else if (ExecutorType.REUSE == executorType) {
+    } else if (ExecutorType.REUSE == executorType) {  // 重用Executor
       executor = new ReuseExecutor(this, transaction);
-    } else {
+    } else {                                          // 简单Executor
       executor = new SimpleExecutor(this, transaction);
     }
     if (cacheEnabled) {

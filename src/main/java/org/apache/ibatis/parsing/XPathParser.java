@@ -232,7 +232,7 @@ public class XPathParser {
   private Document createDocument(InputSource inputSource) {
     // important: this must only be called AFTER common constructor
     try {
-      // 创建工程
+      // 创建工厂
       DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
       factory.setValidating(validation);
       factory.setNamespaceAware(false);
@@ -259,7 +259,7 @@ public class XPathParser {
         public void warning(SAXParseException exception) throws SAXException {
         }
       });
-      // Document 执行解析
+      // document 执行解析
       return builder.parse(inputSource);
     } catch (Exception e) {
       throw new BuilderException("Error creating document instance.  Cause: " + e, e);

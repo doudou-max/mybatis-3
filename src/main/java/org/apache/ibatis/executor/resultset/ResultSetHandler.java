@@ -23,6 +23,8 @@ import java.sql.Statement;
 import java.util.List;
 
 /**
+ * mybatis 查询结果集处理
+ *
  * @author Clinton Begin
  */
 public interface ResultSetHandler {

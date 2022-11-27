@@ -32,6 +32,9 @@ import java.util.Collections;
 import java.util.List;
 
 /**
+ * 当执行增删改查时，该类获取数据库连接，创建 PrepareStatement 或者 Statement 对象，
+ * 执行SQL语句，最后将数据库返回结果转化为设定的对象
+ *
  * @author Clinton Begin
  */
 public class SimpleExecutor extends BaseExecutor {
@@ -53,16 +56,20 @@ public class SimpleExecutor extends BaseExecutor {
     }
   }
 
-  /** sql qeury */
+  /** sql query */
   @Override
   public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
     Statement stmt = null;
     try {
       Configuration configuration = ms.getConfiguration();
+      // 创建 StatementHandler 对象
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+      // 获得数据库连接，创建 Statement 或者 PrepareStatement
       stmt = prepareStatement(handler, ms.getStatementLog());
+      // 执行SQL语句，将数据库返回结果转化为设定的对象，List、Map、POJO
       return handler.<E>query(stmt, resultHandler);
     } finally {
+      // 关闭 Statement 对象
       closeStatement(stmt);
     }
   }

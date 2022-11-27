@@ -34,6 +34,9 @@ import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.transaction.Transaction;
 
 /**
+ * ReuseExecutor 从名字可以看出该类主要特点是复用，它复用的是 Statement 对象或者 PreparedStatement 对象
+ * 复用的对象保存在 statementMap 中
+ *
  * @author Clinton Begin
  */
 public class ReuseExecutor extends BaseExecutor {
@@ -44,18 +47,28 @@ public class ReuseExecutor extends BaseExecutor {
     super(configuration, transaction);
   }
 
+  /**
+   * 更新操作
+   */
   @Override
   public int doUpdate(MappedStatement ms, Object parameter) throws SQLException {
     Configuration configuration = ms.getConfiguration();
+    // 创建 StatementHandler 对象
     StatementHandler handler = configuration.newStatementHandler(this, ms, parameter, RowBounds.DEFAULT, null, null);
+    // 创建或者复用 Statement 对象
     Statement stmt = prepareStatement(handler, ms.getStatementLog());
     return handler.update(stmt);
   }
 
+  /**
+   * 查询操作
+   */
   @Override
   public <E> List<E> doQuery(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) throws SQLException {
     Configuration configuration = ms.getConfiguration();
+    // 创建 StatementHandler 对象
     StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
+    // 创建或者复用 Statement 对象
     Statement stmt = prepareStatement(handler, ms.getStatementLog());
     return handler.<E>query(stmt, resultHandler);
   }
@@ -77,18 +90,28 @@ public class ReuseExecutor extends BaseExecutor {
     return Collections.emptyList();
   }
 
+  /**
+   * 处理 Statement
+   */
   private Statement prepareStatement(StatementHandler handler, Log statementLog) throws SQLException {
     Statement stmt;
     BoundSql boundSql = handler.getBoundSql();
+    // 获得原始SQL语句
     String sql = boundSql.getSql();
+    // 判断SQL是否存在 statementMap中
     if (hasStatementFor(sql)) {
+      // 拿到已存在的Statement对象
       stmt = getStatement(sql);
+      // 设置超时参数
       applyTransactionTimeout(stmt);
     } else {
+      // 如果没有执行过该SQL，获取连接
       Connection connection = getConnection(statementLog);
+      // 将SQL语句和 Statement对象添加到 statementMap
       stmt = handler.prepare(connection, transaction.getTimeout());
       putStatement(sql, stmt);
     }
+    // 如果 stmt 是 PreparedStatement 对象，下面的方法用于设置SQL语句的参数
     handler.parameterize(stmt);
     return stmt;
   }
