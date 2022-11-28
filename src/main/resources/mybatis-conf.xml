@@ -15,9 +15,17 @@
         <setting name="logImpl" value="STDOUT_LOGGING"/>
     </settings>
 
+    <!-- 别名 -->
     <typeAliases>
         <typeAlias type="org.sang.bean.User" alias="user"/>
     </typeAliases>
+
+    <!-- mybatis插件的配置 -->
+    <plugins>
+        <plugin interceptor="org.sang.interceptor.DemoInterceptor">
+            <property name="name" value="doudou"/>
+        </plugin>
+    </plugins>
 
     <environments default="development">
         <environment id="development">

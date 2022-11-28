@@ -26,6 +26,8 @@ import java.util.Set;
 import org.apache.ibatis.reflection.ExceptionUtil;
 
 /**
+ * mybatis 插件类
+ *
  * @author Clinton Begin
  */
 public class Plugin implements InvocationHandler {
@@ -40,32 +42,49 @@ public class Plugin implements InvocationHandler {
     this.signatureMap = signatureMap;
   }
 
+  /**
+   * mybatis 拦截器生成代理对象
+   * 生成的代理对象是 Plugin 类型代理对象
+   * 所有方法调用会调用该类的 invoke()
+   */
   public static Object wrap(Object target, Interceptor interceptor) {
+    // 获取类和方法集合
     Map<Class<?>, Set<Method>> signatureMap = getSignatureMap(interceptor);
     Class<?> type = target.getClass();
+    // 目标的接口，代理生成的接口
     Class<?>[] interfaces = getAllInterfaces(type, signatureMap);
     if (interfaces.length > 0) {
+      // 创建JDK动态代理
       return Proxy.newProxyInstance(
           type.getClassLoader(),
           interfaces,
+          // 代理对象类型是 Plugin
           new Plugin(target, interceptor, signatureMap));
     }
     return target;
   }
 
+  /**
+   * Plugin 类型代理对象调用
+   */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
       Set<Method> methods = signatureMap.get(method.getDeclaringClass());
       if (methods != null && methods.contains(method)) {
+        // 如果拦截的方法与执行方法一样，执行增强
         return interceptor.intercept(new Invocation(target, method, args));
       }
+      // 如果不是，执行方法就可以
       return method.invoke(target, args);
     } catch (Exception e) {
       throw ExceptionUtil.unwrapThrowable(e);
     }
   }
 
+  /**
+   * 解析 @Intercepts 注解，获取里面的内容
+   */
   private static Map<Class<?>, Set<Method>> getSignatureMap(Interceptor interceptor) {
     Intercepts interceptsAnnotation = interceptor.getClass().getAnnotation(Intercepts.class);
     // issue #251

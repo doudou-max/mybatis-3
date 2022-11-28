@@ -15,6 +15,7 @@
  */
 package org.sang.db;
 
+import org.apache.ibatis.annotations.Param;
 import org.sang.bean.User;
 
 /**
@@ -24,6 +25,8 @@ import org.sang.bean.User;
 public interface UserMapper {
 
     public User getUser(Long id);
+
+    public User getUserIdAndUserName(@Param("id") Long id, @Param("username") String username);
 
     public int insertUser(User user);
 

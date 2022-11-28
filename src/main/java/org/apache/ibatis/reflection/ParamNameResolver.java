@@ -34,6 +34,10 @@ public class ParamNameResolver {
   private static final String GENERIC_NAME_PREFIX = "param";
 
   /**
+   * 解析mapper方法参数
+   *    {参数顺序,参数名称}
+   *    aMethod(@Param("M") int a, @Param("N") int b) -> {{0, "M"}, {1, "N"}}
+   *
    * <p>
    * The key is the index and the value is the name of the parameter.<br />
    * The name is obtained from {@link Param} if specified. When {@link Param} is not specified,
@@ -104,6 +108,31 @@ public class ParamNameResolver {
   }
 
   /**
+   * 参数转换
+   *    如果多个参数 不指定占位符 或者 不用@Param 注解指定参数，就会导致查询报错
+   *
+   * args 是一个 object 数组，存储调用 mapper 方法传的参数值
+   *    User getUserIdAndUserName(@Param("id") Long id, @Param("username") String username)
+   *    [100L,"李豆豆"] 这样的格式存储数据
+   *    [ 0  , 1]      数据对应的数组下标
+   *
+   * names 是一个 SortedMap，存储内容如下
+   *    {
+   *        {"1":"id"},
+   *        {"2":"username"}
+   *    }
+   *
+   * 遍历 names，凭借 param 返回
+   *    拿 name 的 value 作为 param 的 key
+   *    拿 name 的 key 到 objects 数组中获取对应的值
+   *    拼成
+   *      {
+   *          "id":"100",
+   *          "username":"李豆豆"
+   *      }
+   *    的数据格式返回
+   *
+   *
    * <p>
    * A single non-special parameter is returned without a name.<br />
    * Multiple parameters are named using the naming rule.<br />
@@ -112,19 +141,27 @@ public class ParamNameResolver {
    * </p>
    */
   public Object getNamedParams(Object[] args) {
+    // 参数个数
     final int paramCount = names.size();
+    // 参数为空或者个数为0
     if (args == null || paramCount == 0) {
       return null;
-    } else if (!hasParamAnnotation && paramCount == 1) {
+    }
+    // 参数没有注解而且个数为1
+    else if (!hasParamAnnotation && paramCount == 1) {
       return args[names.firstKey()];
-    } else {
+    }
+    // 其他情况
+    else {
       final Map<String, Object> param = new ParamMap<Object>();
       int i = 0;
       for (Map.Entry<Integer, String> entry : names.entrySet()) {
         param.put(entry.getValue(), args[entry.getKey()]);
         // add generic param names (param1, param2, ...)
+        // 生成新 key arg -> param (0 -> 1)
         final String genericParamName = GENERIC_NAME_PREFIX + String.valueOf(i + 1);
         // ensure not to overwrite parameter named with @Param
+        // 确保不覆盖以@Param命名的参数
         if (!names.containsValue(genericParamName)) {
           param.put(genericParamName, args[entry.getKey()]);
         }

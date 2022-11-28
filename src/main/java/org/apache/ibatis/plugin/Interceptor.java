@@ -35,8 +35,9 @@ import java.util.Properties;
  * mybatis-plus 分页插件
  *    PaginationInterceptor
  *
- * 参考博客：
+ * 参考文章：
  *    https://blog.csdn.net/weixin_52851967/article/details/125190987
+ *    https://www.cnblogs.com/redwinter/p/16607597.html
  *
  * @author Clinton Begin
  */

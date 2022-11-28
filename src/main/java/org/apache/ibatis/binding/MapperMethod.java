@@ -50,7 +50,10 @@ public class MapperMethod {
     this.method = new MethodSignature(config, mapperInterface, method);
   }
 
-  /** 方法执行 */
+  /**
+   * 方法执行
+   *    convertArgsToSqlCommandParam() -> 将用户的sql参数转成要执行的sql参数
+   */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
     switch (command.getType()) {
@@ -80,9 +83,9 @@ public class MapperMethod {
         } else if (method.returnsCursor()) {
           result = executeForCursor(sqlSession, args);
         } else {
-          // 转换成sql参数
+          // sql 参数转换
           Object param = method.convertArgsToSqlCommandParam(args);
-          // 查询sql
+          // sql 查询 (command name -> org.sang.db.UserMapper.getUserIdAndUserName mapper 接口全限名)
           result = sqlSession.selectOne(command.getName(), param);
         }
         break;
@@ -299,6 +302,9 @@ public class MapperMethod {
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }
 
+    /**
+     * 将用户定义的sql转成执行sql的参数
+     */
     public Object convertArgsToSqlCommandParam(Object[] args) {
       return paramNameResolver.getNamedParams(args);
     }

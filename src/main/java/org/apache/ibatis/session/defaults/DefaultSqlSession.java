@@ -15,15 +15,6 @@
  */
 package org.apache.ibatis.session.defaults;
 
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.ibatis.binding.BindingException;
 import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.exceptions.ExceptionFactory;
@@ -38,6 +29,11 @@ import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.ResultHandler;
 import org.apache.ibatis.session.RowBounds;
 import org.apache.ibatis.session.SqlSession;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.SQLException;
+import java.util.*;
 
 /**
  *
@@ -136,6 +132,14 @@ public class DefaultSqlSession implements SqlSession {
     return this.selectList(statement, null);
   }
 
+  /**
+   * sql 查询
+   *
+   * @param statement mapper 接口全限名
+   * @param parameter 查询参数
+   *
+   * RowBounds.DEFAULT -> 默认偏移量
+   */
   @Override
   public <E> List<E> selectList(String statement, Object parameter) {
     return this.selectList(statement, parameter, RowBounds.DEFAULT);
@@ -144,6 +148,8 @@ public class DefaultSqlSession implements SqlSession {
   @Override
   public <E> List<E> selectList(String statement, Object parameter, RowBounds rowBounds) {
     try {
+      // MappedStatement 信息在解析 mybatis-config.xml 的时候，已经放在 Configuration 对象中
+      // 获取 Mapper 中解析的配置，这个类中存放了sql语句，返回类型，参数类型等
       MappedStatement ms = configuration.getMappedStatement(statement);
       // 执行sql查询 (如果二级缓存开启使用 CachingExecutor，如果没有开启调用 BaseExecutor)
       return executor.query(ms, wrapCollection(parameter), rowBounds, Executor.NO_RESULT_HANDLER);
@@ -318,7 +324,11 @@ public class DefaultSqlSession implements SqlSession {
     return (!autoCommit && dirty) || force;
   }
 
+  /**
+   * 包装查询参数
+   */
   private Object wrapCollection(final Object object) {
+    // 参数属于集合类型
     if (object instanceof Collection) {
       StrictMap<Object> map = new StrictMap<Object>();
       map.put("collection", object);
@@ -326,11 +336,14 @@ public class DefaultSqlSession implements SqlSession {
         map.put("list", object);
       }
       return map;
-    } else if (object != null && object.getClass().isArray()) {
+    }
+    // 参数是数组
+    else if (object != null && object.getClass().isArray()) {
       StrictMap<Object> map = new StrictMap<Object>();
       map.put("array", object);
       return map;
     }
+    // 不是集合和数组返回
     return object;
   }
 

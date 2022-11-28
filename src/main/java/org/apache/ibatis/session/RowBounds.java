@@ -16,6 +16,8 @@
 package org.apache.ibatis.session;
 
 /**
+ * mybatis 的 RowBounds
+ *
  * @author Clinton Begin
  */
 public class RowBounds {
@@ -27,6 +29,11 @@ public class RowBounds {
   private final int offset;
   private final int limit;
 
+  /**
+   * 默认构造方法
+   *  offset -> 0
+   *  limit  -> Integer.MAX_VALUE
+   */
   public RowBounds() {
     this.offset = NO_ROW_OFFSET;
     this.limit = NO_ROW_LIMIT;

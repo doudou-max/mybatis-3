@@ -289,12 +289,16 @@ public final class MappedStatement {
   }
   
   public BoundSql getBoundSql(Object parameterObject) {
+    // 根据 SqlSource 类型调用，由 RawSqlSource 调用到 StaticSqlSource
+    // boundSql 对象包含sql语句、参数列表、
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
+    // sql参数列表，包含：列、参数类型等
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     if (parameterMappings == null || parameterMappings.isEmpty()) {
       boundSql = new BoundSql(configuration, boundSql.getSql(), parameterMap.getParameterMappings(), parameterObject);
     }
 
+    // 检查参数映射
     // check for nested result maps in parameter mappings (issue #30)
     for (ParameterMapping pm : boundSql.getParameterMappings()) {
       String rmId = pm.getResultMapId();

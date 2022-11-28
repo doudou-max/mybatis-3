@@ -31,9 +31,10 @@ public class TestMain {
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 
         // 代理对象调用，查看 MapperProxy.invoke()
-        User user = userMapper.getUser(100L);
+        User user = userMapper.getUserIdAndUserName(101L, "u-0");
+        System.out.println(user);
 
-        // 关闭第一个 sqlSession(二级缓存才能命中)
+        /*// 关闭第一个 sqlSession(二级缓存才能命中)
         sqlSession.close();
 
         // 获取 sqlSession2 查询
@@ -42,7 +43,7 @@ public class TestMain {
         User user2 = userMapper2.getUser(100L);
 
         System.out.println(user == user2);
-        System.out.println(user);
+        System.out.println(user);*/
 
     }
 

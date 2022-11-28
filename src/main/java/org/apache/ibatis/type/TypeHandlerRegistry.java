@@ -49,6 +49,8 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.reflection.Jdk;
 
 /**
+ * 类型处理映射器
+ *
  * @author Clinton Begin
  * @author Kazuki Shimizu
  */

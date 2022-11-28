@@ -137,14 +137,24 @@ public abstract class BaseExecutor implements Executor {
     return doFlushStatements(isRollBack);
   }
 
+  /**
+   * base query
+   *    不开启二级缓存查询走 base query
+   */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
+    // 获取sql语句，解析出sql语句，参数类型，参数值等数据
     BoundSql boundSql = ms.getBoundSql(parameter);
+    // 构建缓存key
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
+    // 查询
     return query(ms, parameter, rowBounds, resultHandler, key, boundSql);
  }
 
- /** sql query */
+  /**
+   * base query
+   *   基础查询，默认使用一级缓存
+   */
   @SuppressWarnings("unchecked")
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
@@ -203,7 +213,9 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
-  /** mybatis 查询创建缓存key */
+  /**
+   * 构建 mybatis 缓存 key
+   */
   @Override
   public CacheKey createCacheKey(MappedStatement ms, Object parameterObject, RowBounds rowBounds, BoundSql boundSql) {
     if (closed) {
@@ -213,7 +225,7 @@ public abstract class BaseExecutor implements Executor {
     cacheKey.update(ms.getId());                  // 接口全限名称
     cacheKey.update(rowBounds.getOffset());       // 偏移量
     cacheKey.update(rowBounds.getLimit());        // 数据量大小
-    cacheKey.update(boundSql.getSql());           // 查询的sql(替换占位符了)
+    cacheKey.update(boundSql.getSql());           // 查询的sql(已将 #{} 替换成 ?)
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     TypeHandlerRegistry typeHandlerRegistry = ms.getConfiguration().getTypeHandlerRegistry();
     // mimic DefaultParameterHandler logic
@@ -330,7 +342,9 @@ public abstract class BaseExecutor implements Executor {
     }
   }
 
-  /** sql 查库 */
+  /**
+   * sql 查库
+   */
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
     localCache.putObject(key, EXECUTION_PLACEHOLDER);   // 这里缓存为了什么 ???
