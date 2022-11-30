@@ -162,7 +162,10 @@ public abstract class BaseExecutor implements Executor {
     if (closed) {
       throw new ExecutorException("Executor was closed.");
     }
+    // queryStack 用于记录查询栈，防止递归查询重复处理缓存
+    // flushCache = true 的时候，会先清空本地缓存(一级缓存)
     if (queryStack == 0 && ms.isFlushCacheRequired()) {
+      // 清空本地缓存
       clearLocalCache();
     }
     List<E> list;
@@ -186,6 +189,7 @@ public abstract class BaseExecutor implements Executor {
       }
       // issue #601
       deferredLoads.clear();
+      // 如果 LocalCacheScope == STATEMENT，会清空本地缓存
       if (configuration.getLocalCacheScope() == LocalCacheScope.STATEMENT) {
         // issue #482
         clearLocalCache();
@@ -347,12 +351,13 @@ public abstract class BaseExecutor implements Executor {
    */
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
-    localCache.putObject(key, EXECUTION_PLACEHOLDER);   // 这里缓存为了什么 ???
+    // 现在缓存用占位符站位
+    localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
       // do query
       list = doQuery(ms, parameter, rowBounds, resultHandler, boundSql);
     } finally {
-      // 删除缓存
+      // 执行查询后，移除占位符缓存
       localCache.removeObject(key);
     }
     // 添加缓存

@@ -15,6 +15,10 @@
  */
 package org.apache.ibatis.binding;
 
+import org.apache.ibatis.lang.UsesJava7;
+import org.apache.ibatis.reflection.ExceptionUtil;
+import org.apache.ibatis.session.SqlSession;
+
 import java.io.Serializable;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
@@ -22,10 +26,6 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
-
-import org.apache.ibatis.lang.UsesJava7;
-import org.apache.ibatis.reflection.ExceptionUtil;
-import org.apache.ibatis.session.SqlSession;
 
 /**
  * @author Clinton Begin
@@ -46,13 +46,18 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
 
   /**
    * mybatis 方法执行代理调用
+   *
+   * @param args 调用方法传递的参数
    */
   @Override
   public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
     try {
+      // 判断是否需要去执行SQL还是直接执行方法
       if (Object.class.equals(method.getDeclaringClass())) {
         return method.invoke(this, args);
-      } else if (isDefaultMethod(method)) {
+      }
+      // 判断接口中的默认方法 default 等
+      else if (isDefaultMethod(method)) {
         return invokeDefaultMethod(proxy, method, args);
       }
     } catch (Throwable t) {
@@ -60,13 +65,21 @@ public class MapperProxy<T> implements InvocationHandler, Serializable {
     }
     // 缓存 Mapper 方法
     final MapperMethod mapperMethod = cachedMapperMethod(method);
-    // 方法加上参数调用
+    // MapperMethod 调用执行 sql
     return mapperMethod.execute(sqlSession, args);
   }
 
   /**
-   * 缓存 Mapper 方法
+   * 缓存 mapper 方法
+   *    在解析 mybatis-config.xml 文件，已经把每个 mapper 文件的每个语句解析出来，
+   *    解析的内容就包括每个方法的参数，解析成 {{"0":"参数名称1"},{"1":"参数名称2"}}
    *
+   * 通过 MapperMethod 对象调用 execute()，将查询的参数 args 传递，然后动态拼接sql语句
+   *
+   * args[] 内容
+   *    ["100","doudou"]   占位符 0,1
+   *
+   * 将 args[]参数 和 mapperMethod对象参数 拼接，就是动态sql拼接
    */
   private MapperMethod cachedMapperMethod(Method method) {
     MapperMethod mapperMethod = methodCache.get(method);

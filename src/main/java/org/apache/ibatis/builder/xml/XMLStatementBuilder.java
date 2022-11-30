@@ -53,6 +53,16 @@ public class XMLStatementBuilder extends BaseBuilder {
     this.requiredDatabaseId = databaseId;
   }
 
+  /**
+   * 1.解析 select |insert |update |delete 标签里面的属性配置详情
+   * 2.有配置的属性进行赋值，没有配置的属性有些给默认值
+   * 3.处理完成所有属性之后构建 MappedStatement 对象
+   * 4.添加到 Configuration 对象的 mappedStatements 属性
+   *    Map<String, MappedStatement> mappedStatements = new StrictMap<MappedStatement>
+   *    key   ->  mapper方法全限名称
+   *    value ->  MappedStatement 对象
+   * 5.解析 mybatis-config.xml 文件，会解析所有的方法
+   */
   public void parseStatementNode() {
     String id = context.getStringAttribute("id");
     String databaseId = context.getStringAttribute("databaseId");
@@ -89,7 +99,8 @@ public class XMLStatementBuilder extends BaseBuilder {
 
     // Parse selectKey after includes and remove them.
     processSelectKeyNodes(id, parameterTypeClass, langDriver);
-    
+
+    // 解析sql语句，构建 SqlSource 对象
     // Parse the SQL (pre: <selectKey> and <include> were parsed and removed)
     SqlSource sqlSource = langDriver.createSqlSource(configuration, context, parameterTypeClass);
     String resultSets = context.getStringAttribute("resultSets");

@@ -17,6 +17,7 @@ package org.apache.ibatis.session;
 
 /**
  * mybatis 的 RowBounds
+ * mybatis 实现分页是通过 RowBounds 分页，不会将分页参数传给数据库，是内存分页
  *
  * @author Clinton Begin
  */

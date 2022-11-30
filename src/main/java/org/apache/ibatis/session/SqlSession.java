@@ -24,7 +24,13 @@ import org.apache.ibatis.cursor.Cursor;
 import org.apache.ibatis.executor.BatchResult;
 
 /**
- * MyBatis 实现分页是通过 RowBounds 分页，不会将分页参数传给数据库，是内存分页
+ * SqlSession 在 mybatis 架构中属于接口层
+ *   方法调用
+ *      可以通过 statement
+ *      可以通过 getMapper() 的方法
+ *
+ *   statement 调用不走代理对象，直接调用 SqlSession
+ *   getMapper() 调用走代理对象，但最终也是调用 SqlSession
  *
  * The primary Java interface for working with MyBatis.
  * Through this interface you can execute commands, get mappers and manage transactions.

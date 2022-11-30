@@ -36,13 +36,16 @@ public class RawSqlSource implements SqlSource {
 
   private final SqlSource sqlSource;
 
+  /** 构建 RawSqlSource */
   public RawSqlSource(Configuration configuration, SqlNode rootSqlNode, Class<?> parameterType) {
     this(configuration, getSql(configuration, rootSqlNode), parameterType);
   }
 
+  /** 构建 RawSqlSource */
   public RawSqlSource(Configuration configuration, String sql, Class<?> parameterType) {
     SqlSourceBuilder sqlSourceParser = new SqlSourceBuilder(configuration);
     Class<?> clazz = parameterType == null ? Object.class : parameterType;
+    // 解析原生sql语句 (这个返回 StaticSqlSource，所以 this 的 sqlSource 为 StaticSqlSource)
     sqlSource = sqlSourceParser.parse(sql, clazz, new HashMap<String, Object>());
   }
 

@@ -36,6 +36,9 @@ import java.lang.reflect.Type;
 import java.util.*;
 
 /**
+ * mapper 方法
+ *   一个mapper语句对应一个 MapperMethod
+ *
  * @author Clinton Begin
  * @author Eduardo Macarron
  * @author Lasse Voss
@@ -56,6 +59,7 @@ public class MapperMethod {
    */
   public Object execute(SqlSession sqlSession, Object[] args) {
     Object result;
+    // 判断 sql 语句的类型
     switch (command.getType()) {
       case INSERT: {
       Object param = method.convertArgsToSqlCommandParam(args);
@@ -83,7 +87,7 @@ public class MapperMethod {
         } else if (method.returnsCursor()) {
           result = executeForCursor(sqlSession, args);
         } else {
-          // sql 参数转换
+          // 将参数转成 sql 参数
           Object param = method.convertArgsToSqlCommandParam(args);
           // sql 查询 (command name -> org.sang.db.UserMapper.getUserIdAndUserName mapper 接口全限名)
           result = sqlSession.selectOne(command.getName(), param);
@@ -217,12 +221,16 @@ public class MapperMethod {
 
   public static class SqlCommand {
 
+    /** mapper 接口全限名称 */
     private final String name;
+    /** sql语句类型 (UNKNOWN, INSERT, UPDATE, DELETE, SELECT, FLUSH) */
     private final SqlCommandType type;
 
     public SqlCommand(Configuration configuration, Class<?> mapperInterface, Method method) {
       final String methodName = method.getName();
       final Class<?> declaringClass = method.getDeclaringClass();
+      // 从 configuration 中获取到当前 mapper接口 对应的 MappedStatement 对象
+      // 这里信息在最开始的解析 config-mybatis.xml 文件中已经解析构建并存到 configuration 中
       MappedStatement ms = resolveMappedStatement(mapperInterface, methodName, declaringClass,
           configuration);
       if (ms == null) {
@@ -250,6 +258,10 @@ public class MapperMethod {
       return type;
     }
 
+    /**
+     * 根据接 口名称 + . + 方法名称 作为 key
+     * 从 configuration 对象中的 mappedStatements 属性获取到 MappedStatement 对象
+     */
     private MappedStatement resolveMappedStatement(Class<?> mapperInterface, String methodName,
         Class<?> declaringClass, Configuration configuration) {
       String statementId = mapperInterface.getName() + "." + methodName;
@@ -273,16 +285,28 @@ public class MapperMethod {
 
   public static class MethodSignature {
 
+    /** 是否返回多条数据 */
     private final boolean returnsMany;
+    /** 是否返回 map 结果数据*/
     private final boolean returnsMap;
+    /** 是否没返回 */
     private final boolean returnsVoid;
+    /** 是否返回游标 */
     private final boolean returnsCursor;
+    /** 返回结果 class */
     private final Class<?> returnType;
+    /** 结果 map key */
     private final String mapKey;
+    /** 返回结果index */
     private final Integer resultHandlerIndex;
+    /** 返回行数 index */
     private final Integer rowBoundsIndex;
+    /** 参数名称解析 */
     private final ParamNameResolver paramNameResolver;
 
+    /**
+     * 构建方法签名对象
+     */
     public MethodSignature(Configuration configuration, Class<?> mapperInterface, Method method) {
       Type resolvedReturnType = TypeParameterResolver.resolveReturnType(method, mapperInterface);
       if (resolvedReturnType instanceof Class<?>) {
@@ -299,6 +323,7 @@ public class MapperMethod {
       this.returnsMap = this.mapKey != null;
       this.rowBoundsIndex = getUniqueParamIndex(method, RowBounds.class);
       this.resultHandlerIndex = getUniqueParamIndex(method, ResultHandler.class);
+      // 解析sql语句的参数，存储 names属性
       this.paramNameResolver = new ParamNameResolver(configuration, method);
     }
 

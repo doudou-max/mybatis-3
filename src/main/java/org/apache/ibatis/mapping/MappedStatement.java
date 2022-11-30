@@ -287,12 +287,14 @@ public final class MappedStatement {
   public String[] getResulSets() {
     return resultSets;
   }
-  
+
+  /**
+   * 构建 BoundSql 对象 (好像也没做啥)
+   */
   public BoundSql getBoundSql(Object parameterObject) {
-    // 根据 SqlSource 类型调用，由 RawSqlSource 调用到 StaticSqlSource
-    // boundSql 对象包含sql语句、参数列表、
+    // RawSqlSource -> StaticSqlSource
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
-    // sql参数列表，包含：列、参数类型等
+    // sql 参数映射列表
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     if (parameterMappings == null || parameterMappings.isEmpty()) {
       boundSql = new BoundSql(configuration, boundSql.getSql(), parameterMap.getParameterMappings(), parameterObject);

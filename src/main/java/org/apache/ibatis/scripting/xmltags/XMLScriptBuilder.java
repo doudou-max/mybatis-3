@@ -63,13 +63,16 @@ public class XMLScriptBuilder extends BaseBuilder {
     nodeHandlerMap.put("bind", new BindHandler());
   }
 
+  /**
+   * 解析原生sql语句，构建 SqlSource 对象
+   */
   public SqlSource parseScriptNode() {
     MixedSqlNode rootSqlNode = parseDynamicTags(context);
     SqlSource sqlSource = null;
     if (isDynamic) {
-      sqlSource = new DynamicSqlSource(configuration, rootSqlNode);
+      sqlSource = new DynamicSqlSource(configuration, rootSqlNode);               // 动态sql
     } else {
-      sqlSource = new RawSqlSource(configuration, rootSqlNode, parameterType);
+      sqlSource = new RawSqlSource(configuration, rootSqlNode, parameterType);    // 行sql
     }
     return sqlSource;
   }

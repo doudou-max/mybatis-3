@@ -54,6 +54,10 @@ public class ParamNameResolver {
 
   private boolean hasParamAnnotation;
 
+  /**
+   * 解析mapper对应的xml方法的参数
+   * 解析的结果存储在 当前对象 的 names属性
+   */
   public ParamNameResolver(Configuration config, Method method) {
     final Class<?>[] paramTypes = method.getParameterTypes();
     final Annotation[][] paramAnnotations = method.getParameterAnnotations();
@@ -108,30 +112,20 @@ public class ParamNameResolver {
   }
 
   /**
-   * 参数转换
-   *    如果多个参数 不指定占位符 或者 不用@Param 注解指定参数，就会导致查询报错
+   * 在解析 mybatis-config.xml 文件，已经把每个 mapper 文件的每个语句解析出来，
+   * 解析的内容就包括每个方法的参数，解析成 {{"0":"参数名称1"},{"1":"参数名称2"}}
    *
-   * args 是一个 object 数组，存储调用 mapper 方法传的参数值
-   *    User getUserIdAndUserName(@Param("id") Long id, @Param("username") String username)
-   *    [100L,"李豆豆"] 这样的格式存储数据
-   *    [ 0  , 1]      数据对应的数组下标
+   * 通过 MapperMethod 对象调用 execute()，将查询的参数 args 传递，然后动态拼接sql语句
+   * args[] 内容
+   *    ["100","李豆豆"]   占位符 0,1
    *
-   * names 是一个 SortedMap，存储内容如下
-   *    {
-   *        {"1":"id"},
-   *        {"2":"username"}
-   *    }
+   * 将 args[]参数 和 mapperMethod对象参数 拼接，就是动态sql拼接
    *
-   * 遍历 names，凭借 param 返回
-   *    拿 name 的 value 作为 param 的 key
-   *    拿 name 的 key 到 objects 数组中获取对应的值
-   *    拼成
-   *      {
-   *          "id":"100",
-   *          "username":"李豆豆"
-   *      }
-   *    的数据格式返回
-   *
+   * 解析完成的数据:
+   *  {
+   *      "参数名称":"参数值",
+   *      "参数名称2":"参数值2"
+   *  }
    *
    * <p>
    * A single non-special parameter is returned without a name.<br />

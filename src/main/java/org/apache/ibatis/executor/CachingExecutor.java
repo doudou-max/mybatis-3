@@ -84,7 +84,7 @@ public class CachingExecutor implements Executor {
   /** 执行sql查询 */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
-    // 获取sql语句 (好像是替换占位符)
+    // 获取 BoundSql 对象
     BoundSql boundSql = ms.getBoundSql(parameterObject);
     // 创建缓存key
     CacheKey key = createCacheKey(ms, parameterObject, rowBounds, boundSql);
