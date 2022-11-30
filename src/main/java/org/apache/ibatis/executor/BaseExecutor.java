@@ -351,7 +351,7 @@ public abstract class BaseExecutor implements Executor {
    */
   private <E> List<E> queryFromDatabase(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, CacheKey key, BoundSql boundSql) throws SQLException {
     List<E> list;
-    // 现在缓存用占位符站位
+    // 先在缓存用占位符站位
     localCache.putObject(key, EXECUTION_PLACEHOLDER);
     try {
       // do query

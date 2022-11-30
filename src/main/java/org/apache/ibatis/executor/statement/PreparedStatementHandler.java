@@ -36,7 +36,9 @@ import org.apache.ibatis.session.RowBounds;
  */
 public class PreparedStatementHandler extends BaseStatementHandler {
 
+  /** PreparedStatementHandler 构造方法 */
   public PreparedStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameter, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
+    // 实例调用 BaseStatementHandler 的构造方法
     super(executor, mappedStatement, parameter, rowBounds, resultHandler, boundSql);
   }
 
@@ -73,6 +75,9 @@ public class PreparedStatementHandler extends BaseStatementHandler {
     return resultSetHandler.<E> handleCursorResultSets(ps);
   }
 
+  /**
+   * 创建 Statement 对象
+   */
   @Override
   protected Statement instantiateStatement(Connection connection) throws SQLException {
     String sql = boundSql.getSql();

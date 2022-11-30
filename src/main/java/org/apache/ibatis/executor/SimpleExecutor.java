@@ -65,11 +65,11 @@ public class SimpleExecutor extends BaseExecutor {
     try {
       // 获取配置
       Configuration configuration = ms.getConfiguration();
-      // 创建 StatementHandler 对象 (生成 mybatis Interceptor 代理对象)
+      // 创建 StatementHandler 对象
       StatementHandler handler = configuration.newStatementHandler(wrapper, ms, parameter, rowBounds, resultHandler, boundSql);
-      // 获得数据库连接，创建 Statement 或者 PrepareStatement
+      // 创建 Statement
       stmt = prepareStatement(handler, ms.getStatementLog());
-      // 执行SQL语句，将数据库返回结果转化为设定的对象，List、Map、POJO
+      // 执行 sql 语句
       return handler.<E>query(stmt, resultHandler);
     } finally {
       // 关闭 Statement 对象
@@ -97,10 +97,9 @@ public class SimpleExecutor extends BaseExecutor {
     Statement stmt;
     // 获取数据库连接
     Connection connection = getConnection(statementLog);
-    // 获取Statement 这里可能获取到 PreparedStatement 、SimpleStatement、CallbackStatement
-    // 这里对象是代理对象，通过 invoke() 调用
+    // 创建 Statement 对象
     stmt = handler.prepare(connection, transaction.getTimeout());
-    // 这里也是代理对象调用，但是会跳过
+    // 设置sql参数
     handler.parameterize(stmt);
     return stmt;
   }

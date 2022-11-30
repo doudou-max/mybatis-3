@@ -554,12 +554,13 @@ public class Configuration {
   }
 
   /**
-   * 创建 StatementHandler 实例，如果有使用拦截器则返回代理对象
+   * 创建 RoutingStatementHandler 实例，如果有使用拦截器则返回代理对象
    */
   public StatementHandler newStatementHandler(Executor executor, MappedStatement mappedStatement, Object parameterObject, RowBounds rowBounds, ResultHandler resultHandler, BoundSql boundSql) {
-    // 创建 statementHandler 对象 (会调用并执行 参数处理 和 结果集处理 的拦截器)
+    // 创建 RoutingStatementHandler 对象
     StatementHandler statementHandler = new RoutingStatementHandler(executor, mappedStatement, parameterObject, rowBounds, resultHandler, boundSql);
     // 拿到一个代理对象，覆盖掉上一行的对象，调用执行链
+    // 加载插件
     statementHandler = (StatementHandler) interceptorChain.pluginAll(statementHandler);
     return statementHandler;
   }

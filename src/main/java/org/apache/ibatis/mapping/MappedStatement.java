@@ -29,24 +29,41 @@ import org.apache.ibatis.scripting.LanguageDriver;
 import org.apache.ibatis.session.Configuration;
 
 /**
+ * mapper 对应的 xml 文件，一个 select|insert|update|delete 标签
+ * 对应一个 MappedStatement 对象
+ *
  * @author Clinton Begin
  */
 public final class MappedStatement {
 
+  // mapper 配置文件名
   private String resource;
+  // 配置类
   private Configuration configuration;
+  // 命名空间+标签id 如 org.sang.db.UserMapper.getUser
   private String id;
+  // 数据大小
   private Integer fetchSize;
+  // 超时时间
   private Integer timeout;
+  // sql对象类型 STATEMENT, PREPARED, CALLABLE 三种之一
   private StatementType statementType;
+  // 结果集类型
   private ResultSetType resultSetType;
+  // sql语句
   private SqlSource sqlSource;
+  // 缓存
   private Cache cache;
+  // 参数映射关系
   private ParameterMap parameterMap;
+  // 结果映射关系，可以自定义多个ResultMap
   private List<ResultMap> resultMaps;
   private boolean flushCacheRequired;
+  // 是否启用缓存
   private boolean useCache;
+  // 结果是否排序
   private boolean resultOrdered;
+  // sql语句类型，INSERT, UPDATE, DELETE, SELECT
   private SqlCommandType sqlCommandType;
   private KeyGenerator keyGenerator;
   private String[] keyProperties;
@@ -289,12 +306,12 @@ public final class MappedStatement {
   }
 
   /**
-   * 构建 BoundSql 对象 (好像也没做啥)
+   * 构建 BoundSql 对象
    */
   public BoundSql getBoundSql(Object parameterObject) {
-    // RawSqlSource -> StaticSqlSource
+    // 获取 BoundSql 对象，BoundSql 对象是对动态 sql 的解析
     BoundSql boundSql = sqlSource.getBoundSql(parameterObject);
-    // sql 参数映射列表
+    // 获取参数映射
     List<ParameterMapping> parameterMappings = boundSql.getParameterMappings();
     if (parameterMappings == null || parameterMappings.isEmpty()) {
       boundSql = new BoundSql(configuration, boundSql.getSql(), parameterMap.getParameterMappings(), parameterObject);
