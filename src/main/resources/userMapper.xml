@@ -37,6 +37,16 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         select * from user where id = #{id} and username = #{username}
     </select>
 
+    <select id="getByUserIds" resultType="org.sang.bean.User">
+        select * from user
+        <where>
+            id in
+            <foreach item="item" collection="userIds" separator="," open="(" close=")" index="">
+                #{item}
+            </foreach>
+        </where>
+    </select>
+
     <insert id="insertUser" parameterType="user">
         INSERT INTO user(username,password,address) VALUES (#{username},#{password},#{address})
     </insert>

@@ -18,6 +18,8 @@ package org.sang.db;
 import org.apache.ibatis.annotations.Param;
 import org.sang.bean.User;
 
+import java.util.List;
+
 /**
  * @author: doudou
  * @since: 2022-11-03
@@ -27,6 +29,8 @@ public interface UserMapper {
     public User getUser(Long id);
 
     public User getUserIdAndUserName(@Param("id") Long id, @Param("username") String username);
+
+    public List<User> getByUserIds(@Param("userIds") List<Long> userIds);
 
     public int insertUser(User user);
 
