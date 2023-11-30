@@ -31,14 +31,23 @@ import org.apache.ibatis.session.Configuration;
  * </br>
  * Can also have additional parameters that are created by the dynamic language (for loops, bind...).
  *
+ * 经过处理一些 动态sql 部分获取到的真实sql，这个sql可能还有 占位符? 和 一个参数映射的有序集合，并且还有每个参数的额外信息
+ *
+ * BoundSql 就是解析之后的 sql 语句
+ *
  * @author Clinton Begin
  */
 public class BoundSql {
 
+  // 最终解析的sql，Mybatis将#{}和${}解析后的sql，其中#{}会被解析为?
   private final String sql;
+  // 参数映射
   private final List<ParameterMapping> parameterMappings;
+  // 参数对象
   private final Object parameterObject;
+  // 额外的参数
   private final Map<String, Object> additionalParameters;
+  // 元数据参数
   private final MetaObject metaParameters;
 
   public BoundSql(Configuration configuration, String sql, List<ParameterMapping> parameterMappings, Object parameterObject) {

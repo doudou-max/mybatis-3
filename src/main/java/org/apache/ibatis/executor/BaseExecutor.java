@@ -143,7 +143,7 @@ public abstract class BaseExecutor implements Executor {
    */
   @Override
   public <E> List<E> query(MappedStatement ms, Object parameter, RowBounds rowBounds, ResultHandler resultHandler) throws SQLException {
-    // 获取sql语句，解析出sql语句，参数类型，参数值等数据
+    // 从 MappedStatement 对象中获取 BoundSql 对象 (BoundSql是对解析sql后的一个包装)
     BoundSql boundSql = ms.getBoundSql(parameter);
     // 构建缓存key
     CacheKey key = createCacheKey(ms, parameter, rowBounds, boundSql);
